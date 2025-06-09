@@ -21,7 +21,11 @@ export function Footer({ className }) {
     <footer className={cn("border-t bg-white", className)}>
       <div className="container flex flex-col md:flex-row items-center justify-between py-6 gap-4">
         <div className="flex flex-col items-center md:items-start">
-          <div className="text-primary font-bold text-xl">SkillProve</div>
+<div className="text-primary font-bold text-xl">
+  <span style={{ color: "#ff6d34" }}>Upto</span>
+  <span style={{ color: "#00bda6 " }}>Skills</span>
+</div>
+
           <p className="text-sm text-muted-foreground mt-1">
             Advanced AI assessment platform
           </p>
@@ -99,7 +103,7 @@ export function Footer({ className }) {
       <div className="container border-t py-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            &copy; {currentYear} SkillProve. All rights reserved.
+            &copy; {currentYear} UptoSkills. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <a

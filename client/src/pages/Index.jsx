@@ -65,7 +65,7 @@ const Index = () => {
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <h1 className="text-3xl md:text-5xl font-bold tracking-tighter">
-                  AI-Powered Skill Assessment Platform
+                 <span style={{ color: "#ff6d34" }}>AI-Powered Skill</span> <span style={{ color: "#00bda6 " }}>Assessment Platform</span> 
                 </h1>
                 <p className="text-muted-foreground md:text-xl">
                   Streamline your hiring process with our comprehensive skill
@@ -74,13 +74,15 @@ const Index = () => {
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  size="lg"
-                  className="bg-primary hover:bg-primary/90"
-                  onClick={() => navigate("/login")}
-                >
-                  Try for free
-                  <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
+  size="lg"
+  onClick={() => navigate("/login")}
+  className="px-10 py-4 text-lg flex items-center justify-center gap-2"
+  style={{ backgroundColor: "#ff6d34" }}
+>
+  Try for free
+  <ChevronRight className="h-4 w-4" />
+</Button>
+
                 <Button variant="outline" size="lg">
                   Schedule a demo
                 </Button>
@@ -104,7 +106,7 @@ const Index = () => {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-              Powerful Assessment Features
+            <span style={{ color: "#ff6d34" }}>Powerful Assessment Features</span> 
             </h2>
             <p className="max-w-[700px] text-muted-foreground md:text-xl">
               Everything you need to evaluate candidates' skills efficiently and
@@ -131,7 +133,7 @@ const Index = () => {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-              How We Compare
+              < span style={{ color: "#ff6d34" }}>How We Compare</span>
             </h2>
             <p className="max-w-[700px] text-muted-foreground md:text-xl">
               SkillProve offers the most comprehensive assessment solution in
@@ -200,7 +202,7 @@ const Index = () => {
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-              Ready to Transform Your Hiring Process?
+              <span style={{color: "#00bda6" }}> Ready to Transform Your Hiring Process?</span>
             </h2>
             <p className="max-w-[600px] text-muted-foreground md:text-xl">
               Join thousands of companies that trust SkillProve to assess
@@ -208,10 +210,11 @@ const Index = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90"
-                onClick={() => navigate("/login")}
-              >
+  size="lg"
+  onClick={() => navigate("/login")}
+  className="px-10 py-4 text-lg flex items-center justify-center gap-2"
+  style={{ backgroundColor: "#ff6d34" }}
+>
                 Try for free
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Button>

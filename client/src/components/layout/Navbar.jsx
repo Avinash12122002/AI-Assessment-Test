@@ -19,7 +19,7 @@ export function Navbar({ className }) {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-4">
           <a href="/" className="flex items-center gap-2">
-            <div className="text-primary text-2xl font-bold">SkillProve</div>
+            <img src="http://uptoskills.com/wp-content/uploads/2023/04/hd-logo-iguru.png" alt="logo" width="200px" />
           </a>
           {isAuthenticated && (
             <nav className="hidden md:flex gap-6 ml-6">
@@ -101,7 +101,7 @@ export function Navbar({ className }) {
               <Button variant="outline" onClick={() => navigate("/login")}>
                 Log in
               </Button>
-              <Button onClick={() => navigate("/login")}>Try for free</Button>
+              <Button onClick={() => navigate("/login")} style={{ backgroundColor: "#ff6d34" }}>Try for free</Button>
             </>
           )}
         </div>
