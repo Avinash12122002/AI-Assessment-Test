@@ -14,6 +14,7 @@ import StartTest from "@/pages/candidate/StartTest";
 import TakeTest from "@/pages/candidate/TakeTest";
 import PreviousResults from "@/pages/candidate/PreviousResults";
 import SignUp from "./pages/auth/SignUp";
+import ContactForm from "./pages/auth/ContactForm";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<SignUp />} />
+          <Route path="/contact" element={<ContactForm />} />
           {/* HR Routes */}
           <Route path="/hr/dashboard" element={<HrDashboard />} />
           <Route path="/hr/create-test" element={<CreateTest />} />
