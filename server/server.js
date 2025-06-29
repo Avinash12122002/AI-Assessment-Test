@@ -1,39 +1,47 @@
 require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
 const cors = require("cors");
-const connectDb = require("./utils/db");
-const router = require("./router/auth-router");
+
+// Import routers
+const authRouter = require("./router/auth-router");
+const testRouter = require("./router/test-router");
+const attemptRouter = require("./router/attempt-router");
+const hrRouter = require("./router/hr-router");
+
+// Middlewares
 const errorMiddleware = require("./middlewares/error-middleware");
 
+// Initialize express app
 const app = express();
 
+// Middleware setup
 app.use(cors({ origin: "*", credentials: true }));
-
-
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-
-
-// Routes
-app.use("/api/auth", router);
+// API Routes
+app.use("/api/auth", authRouter);
+app.use("/api/tests", testRouter);
+app.use("/api/attempts", attemptRouter);
+app.use("/api/hr", hrRouter);
 
 // Global error handler
 app.use(errorMiddleware);
 
-// Get PORT from .env or default to 3000
-const PORT = 3000;
+// Server port
+const PORT = process.env.PORT || 8080;
 
-// Database Connection & Server Start
-connectDb()
+// ✅ Connect to MongoDB and start server
+mongoose
+  .connect(process.env.MONGODB_URI)
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server is running at http://localhost:${PORT}`);
-    });
+    console.log("✅ Connected to MongoDB");
+    app.listen(PORT, () =>
+      console.log(`🚀 Server started at http://localhost:${PORT}`)
+    );
   })
   .catch((err) => {
-    console.error("Database Connection Failed:", err);
-    process.exit(1); 
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
   });

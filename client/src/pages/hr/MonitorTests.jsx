@@ -1,77 +1,95 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Search, AlertCircle, UserCheck, UserX, Eye } from "lucide-react";
+import {
+  Search,
+  AlertCircle,
+  UserCheck,
+  UserX,
+  Eye
+} from "lucide-react";
 
-// Sample data for candidates
-const candidates = [
-  {
-    id: "1",
-    name: "John Smith",
-    email: "john.smith@example.com",
-    testName: "Programming Skills Assessment",
-    status: "in-progress",
-    progress: 45,
-    violations: 0,
-    timeRemaining: "16:22",
-  },
-  {
-    id: "2",
-    name: "Emily Johnson",
-    email: "emily.j@example.com",
-    testName: "Programming Skills Assessment",
-    status: "in-progress",
-    progress: 75,
-    violations: 2,
-    timeRemaining: "08:43",
-  },
-  {
-    id: "3",
-    name: "Michael Chang",
-    email: "m.chang@example.com",
-    testName: "Customer Care Periodic Test",
-    status: "not-started",
-    progress: 0,
-    violations: 0,
-  },
-  {
-    id: "4",
-    name: "Lisa Rodriguez",
-    email: "lisa.r@example.com",
-    testName: "Product Knowledge Test for Sales",
-    status: "completed",
-    progress: 100,
-    violations: 1,
-  },
-  {
-    id: "5",
-    name: "David Wilson",
-    email: "d.wilson@example.com",
-    testName: "Programming Skills Assessment",
-    status: "in-progress",
-    progress: 30,
-    violations: 3,
-    timeRemaining: "21:15",
-  },
-];
 
 const MonitorTests = () => {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [testName, setTestName] = useState("");
+  const [questions, setQuestions] = useState([]);
+  const [candidates, setCandidates] = useState([]); // ✅ Moved inside the component
+  const [aiTests, setAiTests] = useState([]); // ✅ State for AI-created tests
 
+  // ✅ Fetch candidates
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/hr/monitor", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch candidates");
+
+        const data = await res.json();
+        console.log("✅ Fetched candidates:", data);
+        setCandidates(data);
+      } catch (error) {
+        console.error("❌ Error fetching candidates:", error);
+        toast({ title: "Failed to load candidates", variant: "destructive" });
+      }
+    };
+
+    fetchCandidates();
+  }, [toast]);
+
+  // ✅ Fetch AI-created tests
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/hr/my-tests", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch tests");
+
+        const data = await res.json();
+        console.log("✅ Fetched tests:", data);
+        setAiTests(data);
+      } catch (error) {
+        console.error("❌ Error fetching AI tests:", error);
+        toast({ title: "Failed to load AI tests", variant: "destructive" });
+      }
+    };
+
+    fetchTests();
+  }, [toast]);
+
+  // ✅ Filter candidates
   const filteredCandidates = candidates.filter((candidate) => {
     const searchLower = search.toLowerCase();
     return (
       candidate.name.toLowerCase().includes(searchLower) ||
       candidate.email.toLowerCase().includes(searchLower) ||
-      candidate.testName.toLowerCase().includes(searchLower)
+      (candidate.testName && candidate.testName.toLowerCase().includes(searchLower))
     );
   });
 
@@ -89,7 +107,7 @@ const MonitorTests = () => {
     setSelectedCandidate(candidate);
   };
 
-  const handleFlagViolation = (candidateId) => {
+  const handleFlagViolation = () => {
     toast({
       title: "Violation flagged",
       description:
@@ -97,16 +115,26 @@ const MonitorTests = () => {
     });
   };
 
-  const handleInterveneToChatWithCandidate = (candidateId) => {
+  const handleInterveneToChatWithCandidate = () => {
     toast({
       title: "Chat initiated",
       description: "Opening chat with the candidate...",
     });
   };
-
   return (
     <DashboardLayout allowedRole="hr">
       <div className="space-y-8">
+
+        {/* 🔥 ADDED: Save Test input and button */}
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Enter test name"
+            value={testName}
+            onChange={(e) => setTestName(e.target.value)}
+          />
+          <Button onClick={handleSaveTest}>Save Test</Button>
+        </div>
+
         <div className="flex justify-between items-center">
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">
@@ -117,7 +145,6 @@ const MonitorTests = () => {
             </p>
           </div>
         </div>
-
         {/* Search and filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
