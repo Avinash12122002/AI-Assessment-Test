@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { TestCard } from "@/components/tests/TestCard";
@@ -16,57 +16,52 @@ import {
 } from "lucide-react";
 import { UserSettings } from "@/components/user/UserSettings";
 
-const mockTests = [
-  {
-    id: "1",
-    title: "Programming Skills Assessment",
-    description: "Evaluate coding skills and problem-solving abilities",
-    category: "Programming",
-    status: "active",
-    createdDate: "2025-03-21",
-    respondents: 24,
-    avgScore: 76,
-  },
-  {
-    id: "2",
-    title: "Customer Care Periodic Test",
-    description: "Regular assessment for customer service skills",
-    category: "Customer Service",
-    status: "setup",
-    createdDate: "2025-03-21",
-    respondents: 0,
-  },
-  {
-    id: "3",
-    title: "Product Knowledge Test for Sales",
-    description: "Test on product features and sales techniques",
-    category: "Sales",
-    status: "setup",
-    createdDate: "2025-03-21",
-    respondents: 0,
-  },
-  {
-    id: "4",
-    title: "Data Analysis Proficiency",
-    description: "Assessment for data analysis and visualization skills",
-    category: "Data Science",
-    status: "completed",
-    createdDate: "2025-03-10",
-    respondents: 15,
-    avgScore: 68,
-  },
-];
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
+  const [tests, setTests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTests = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/hr/my-tests", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        // Check if response is valid JSON
+        const contentType = res.headers.get("content-type");
+        if (!res.ok || !contentType?.includes("application/json")) {
+          const text = await res.text();
+          console.error("Non-JSON response:", text);
+          throw new Error("Unexpected server response. Check the API endpoint.");
+        }
+
+        const data = await res.json();
+        setTests(data || []);
+      } catch (error) {
+        console.error("❌ Failed to fetch tests:", error);
+        toast({
+          title: "Failed to load tests",
+          description: error.message || "Something went wrong",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTests();
+  }, [toast]);
 
   const handleTestAction = (action, id) => {
     if (action === "view-results") {
-      navigate("/hr/reports");
+      navigate(`/hr/test/${id}/results`);
     } else if (action === "edit") {
-      navigate("/hr/create-test");
+      navigate(`/hr/edit-test/${id}`);
     } else {
       toast({
         title: "Action triggered",
@@ -74,6 +69,12 @@ const Dashboard = () => {
       });
     }
   };
+
+  const totalTests = tests.length;
+  const completedTests = tests.filter((t) => t.status === "completed").length;
+  const inProgressTests = tests.filter((t) => t.status === "in-progress").length;
+  const violations = tests.filter((t) => t.hasViolation).length;
+
 
   return (
     <DashboardLayout allowedRole="hr">
@@ -105,89 +106,15 @@ const Dashboard = () => {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="dashboard-card flex items-center space-x-4">
-                <div className="bg-primary/10 p-3 rounded-full">
-                  <FileText className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Total Tests
-                  </p>
-                  <h3 className="text-2xl font-bold">4</h3>
-                </div>
-              </div>
-
-              <div className="dashboard-card flex items-center space-x-4">
-                <div className="bg-success/10 p-3 rounded-full">
-                  <CheckCircle className="h-6 w-6 text-success" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Completed
-                  </p>
-                  <h3 className="text-2xl font-bold">39</h3>
-                </div>
-              </div>
-
-              <div className="dashboard-card flex items-center space-x-4">
-                <div className="bg-warning/10 p-3 rounded-full">
-                  <Clock className="h-6 w-6 text-warning" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    In Progress
-                  </p>
-                  <h3 className="text-2xl font-bold">7</h3>
-                </div>
-              </div>
-
-              <div className="dashboard-card flex items-center space-x-4">
-                <div className="bg-destructive/10 p-3 rounded-full">
-                  <AlertCircle className="h-6 w-6 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Violations
-                  </p>
-                  <h3 className="text-2xl font-bold">3</h3>
-                </div>
-              </div>
+              <DashboardStatCard icon={<FileText className="h-6 w-6 text-primary" />} label="Total Tests" value={totalTests} bg="primary" />
+              <DashboardStatCard icon={<CheckCircle className="h-6 w-6 text-success" />} label="Completed" value={completedTests} bg="success" />
+              <DashboardStatCard icon={<Clock className="h-6 w-6 text-warning" />} label="In Progress" value={inProgressTests} bg="warning" />
+              <DashboardStatCard icon={<AlertCircle className="h-6 w-6 text-destructive" />} label="Violations" value={violations} bg="destructive" />
             </div>
 
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-              <div className="dashboard-card">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-medium">Recent Test Results</h3>
-                  <Button variant="ghost" size="sm">
-                    View all
-                  </Button>
-                </div>
-                <div className="flex items-center justify-center h-64">
-                  <div className="flex flex-col items-center justify-center text-center p-6">
-                    <BarChart3 className="h-12 w-12 text-muted-foreground mb-2" />
-                    <p className="text-muted-foreground">
-                      Chart visualization showing recent test scores
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="dashboard-card">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-medium">Active Candidates</h3>
-                  <Button variant="ghost" size="sm">
-                    View all
-                  </Button>
-                </div>
-                <div className="flex items-center justify-center h-64">
-                  <div className="flex flex-col items-center justify-center text-center p-6">
-                    <Users className="h-12 w-12 text-muted-foreground mb-2" />
-                    <p className="text-muted-foreground">
-                      Visualization showing candidate activity and status
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <ChartPlaceholder title="Recent Test Results" icon={<BarChart3 />} />
+              <ChartPlaceholder title="Active Candidates" icon={<Users />} />
             </div>
 
             <div>
@@ -202,10 +129,10 @@ const Dashboard = () => {
                 </Button>
               </div>
               <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
-                {mockTests.slice(0, 2).map((test) => (
+                {tests.slice(0, 2).map((test) => (
                   <TestCard
-                    key={test.id}
-                    {...test}
+                    key={test._id}
+                    test={test}
                     onAction={handleTestAction}
                     viewType="hr"
                   />
@@ -215,16 +142,22 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="tests">
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-              {mockTests.map((test) => (
-                <TestCard
-                  key={test.id}
-                  {...test}
-                  onAction={handleTestAction}
-                  viewType="hr"
-                />
-              ))}
-            </div>
+            {loading ? (
+              <p className="text-center text-muted-foreground">Loading tests...</p>
+            ) : tests.length === 0 ? (
+              <p className="text-center text-muted-foreground">No tests available.</p>
+            ) : (
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                {tests.map((test) => (
+                  <TestCard
+                    key={test._id}
+                    test={test}
+                    onAction={handleTestAction}
+                    viewType="hr"
+                  />
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="candidates">
@@ -242,5 +175,30 @@ const Dashboard = () => {
     </DashboardLayout>
   );
 };
+
+const DashboardStatCard = ({ icon, label, value, bg }) => (
+  <div className="dashboard-card flex items-center space-x-4">
+    <div className={`bg-${bg}/10 p-3 rounded-full`}>{icon}</div>
+    <div>
+      <p className="text-sm font-medium text-muted-foreground">{label}</p>
+      <h3 className="text-2xl font-bold">{value}</h3>
+    </div>
+  </div>
+);
+
+const ChartPlaceholder = ({ title, icon }) => (
+  <div className="dashboard-card">
+    <div className="flex justify-between items-center mb-4">
+      <h3 className="font-medium">{title}</h3>
+      <Button variant="ghost" size="sm">View all</Button>
+    </div>
+    <div className="flex items-center justify-center h-64">
+      <div className="flex flex-col items-center justify-center text-center p-6">
+        {icon}
+        <p className="text-muted-foreground mt-2">Visualization coming soon</p>
+      </div>
+    </div>
+  </div>
+);
 
 export default Dashboard;

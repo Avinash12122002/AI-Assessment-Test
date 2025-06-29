@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(""); // Still storing role for state management
 
   useEffect(() => {
     if (!initialized.current) {
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
-          setRole(parsedUser.role);
+          setRole(parsedUser.role); // Keep role for internal logic
         }
       } catch (err) {
         console.error("Error reading user from localStorage:", err);
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
-  // ✅ Register function
+  // ✅ Register user (For Candidate only)
   const register = async (name, email, password) => {
     setLoading(true);
     setError("");
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch(URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role: "candidate" }),
+        body: JSON.stringify({ name, email, password, role: "candidate" }), // Hardcoded role as "candidate"
       });
 
       const data = await response.json();
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Login function
+  // ✅ Login with role validation (no changes needed here)
   const login = async (email, password, expectedRole) => {
     setLoading(true);
     setError("");
@@ -125,48 +125,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // ✅ Contact function – only Candidate allowed
-  const contact = async (name, email, message) => {
-    setLoading(true);
-    setError("");
-
-    // Block HR users from sending messages
-    if (role !== "candidate") {
-      const errorMessage = "You are not authorized person";
-      setError(errorMessage);
-      setLoading(false);
-      return { success: false, error: errorMessage };
-    }
-
-    const URL = "http://localhost:3000/api/auth/contact";
-
-    try {
-      const response = await fetch(URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify({ name, email, message }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        return { success: true, message: data.message };
-      } else {
-        const errMsg = data.error || data.message || "Submission failed.";
-        setError(errMsg);
-        return { success: false, error: errMsg };
-      }
-    } catch (err) {
-      setError("Something went wrong.");
-      return { success: false, error: err.message };
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const logout = () => {
     setUser(null);
     setRole("");
@@ -182,8 +140,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         error,
         login,
-        register,
-        contact, // ✅ expose contact
+        register, // ✅ exposed register function
         logout,
         role,
         isAuthenticated: !!user,

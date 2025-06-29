@@ -1,21 +1,7 @@
 import { cn } from "@/lib/utils";
-import { useRoutes } from "react-router-dom";
-import { Link } from "react-router-dom";
-import ContactForm from "@/pages/auth/ContactForm";
 
 export function Footer({ className }) {
   const currentYear = new Date().getFullYear();
-
-  // Define the local route
-  const contactRoute = useRoutes([
-    {
-      path: "/contact",
-      element: <ContactForm />,
-    },
-  ]);
-
-  // If route matches, render the ContactForm
-  if (contactRoute) return contactRoute;
 
   return (
     <footer className={cn("border-t bg-white", className)}>
@@ -80,12 +66,12 @@ export function Footer({ className }) {
             >
               Help Center
             </a>
-            <Link
-              to="/contact"
+            <a
+              href="#contact"
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               Contact Us
-            </Link>
+            </a>
             <a
               href="#privacy"
               className="text-sm text-muted-foreground hover:text-foreground"

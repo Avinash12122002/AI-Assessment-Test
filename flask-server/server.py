@@ -1,9 +1,14 @@
 import time
 import random
 import logging
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from dotenv import load_dotenv
 import google.generativeai as genai
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -11,8 +16,11 @@ CORS(app)
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
-# ✅ Gemini API Key directly embedded
-GENAI_API_KEY = "YOUR API KEY HERE"
+# ✅ Load Gemini API Key from .env
+GENAI_API_KEY = os.getenv("GENAI_API_KEY")
+if not GENAI_API_KEY:
+    raise ValueError("❌ GENAI_API_KEY is missing in .env")
+
 genai.configure(api_key=GENAI_API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash-lite")
 
@@ -61,7 +69,7 @@ def retry_generate_question(text, keyword, q_type, difficulty, retries=3, delay=
         if result:
             return result
         logging.warning(f"Retry {attempt + 1} failed for {q_type} question with keyword '{keyword}'. Retrying...")
-        time.sleep(delay * (2 ** attempt))  # Exponential backoff
+        time.sleep(delay * (2 ** attempt))
     logging.error(f"Failed to generate {q_type} question after {retries} attempts.")
     return None
 
@@ -81,7 +89,6 @@ def generate():
     keyword = highlight_keyword(text)
     results = []
 
-    # Sequentially generate questions one by one
     for i in range(num_questions):
         result = retry_generate_question(text, keyword, q_type, difficulty)
         if result:
@@ -96,7 +103,6 @@ def generate():
         response["message"] = random.choice(CREATIVE_ERROR_MESSAGES) + f" {failed_count} questions failed."
 
     logging.info(f"Generated {len(results)} questions successfully. Failed to generate {failed_count}.")
-
     return jsonify(response)
 
 if __name__ == '__main__':

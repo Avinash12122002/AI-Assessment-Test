@@ -20,14 +20,16 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["hr", "candidate"],
-    default: "candidate", // ✅ default to candidate
+    default: "candidate",
   },
 });
 
-// bcrypt - Hash password before saving
+// ✅ Skip hashing for HR
 userSchema.pre("save", async function (next) {
   const user = this;
-  if (!user.isModified("password")) {
+
+  // If password is already hashed or user is HR, skip hashing
+  if (!user.isModified("password") || user.role === "hr") {
     return next();
   }
 
@@ -42,12 +44,18 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// comparePassword - Compare plain password with hashed password
-userSchema.methods.comparePassword = async function (password) {
-  return bcrypt.compare(password, this.password);
+// 🔐 Compare password (only needed for candidates; works for HR too)
+userSchema.methods.comparePassword = async function (inputPassword) {
+  if (this.role === "hr") {
+    // Direct string comparison for HR
+    return inputPassword === this.password;
+  } else {
+    // Bcrypt comparison for candidates
+    return bcrypt.compare(inputPassword, this.password);
+  }
 };
 
-// generateToken - Generate JWT token
+// 🔑 Generate JWT token
 userSchema.methods.generateToken = async function () {
   try {
     return jwt.sign(
@@ -66,6 +74,5 @@ userSchema.methods.generateToken = async function () {
   }
 };
 
-const User = new mongoose.model("User", userSchema);
-
+const User = mongoose.model("User", userSchema);
 module.exports = User;

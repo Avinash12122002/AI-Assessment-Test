@@ -1,14 +1,16 @@
 const mongoose = require('mongoose');
 
-
-const URI = process.env.MONGODB_URI;
-
 const connectDb = async () => {
   try {
-    await mongoose.connect(URI)
-    console.log('MongoDB Connected');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('MongoDB connected successfully');
+    
+    // Create indexes after connection
+    await mongoose.connection.db.collection('users').createIndex({ email: 1 }, { unique: true });
+    await mongoose.connection.db.collection('users').createIndex({ role: 1 });
+    
   } catch (error) {
-    console.error("Database Connection Failed", error);
+    console.error('MongoDB connection error:', error);
     process.exit(1);
   }
 };
